@@ -1,0 +1,87 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1e1b4b"/>
+      <stop offset="0.55" stop-color="#3b1f8f"/>
+      <stop offset="1" stop-color="#7c3aed"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.55" r="0.5">
+      <stop offset="0" stop-color="#22d3ee" stop-opacity="0.55"/>
+      <stop offset="0.6" stop-color="#22d3ee" stop-opacity="0.08"/>
+      <stop offset="1" stop-color="#22d3ee" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="shine" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.12"/>
+      <stop offset="0.5" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="shackle" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fde68a"/>
+      <stop offset="0.5" stop-color="#fbbf24"/>
+      <stop offset="1" stop-color="#f97316"/>
+    </linearGradient>
+    <linearGradient id="body" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#dbeafe"/>
+    </linearGradient>
+    <linearGradient id="dot" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#6d28d9"/>
+      <stop offset="1" stop-color="#0891b2"/>
+    </linearGradient>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="22" stdDeviation="24" flood-color="#0b0820" flood-opacity="0.55"/>
+    </filter>
+    <filter id="soft" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="6"/>
+    </filter>
+    <clipPath id="tile">
+      <rect x="100" y="100" width="824" height="824" rx="186"/>
+    </clipPath>
+  </defs>
+
+  <!-- Tile (macOS icon grid: 824px body inside a 1024px canvas) -->
+  <g filter="url(#shadow)">
+    <rect x="100" y="100" width="824" height="824" rx="186" fill="url(#bg)"/>
+  </g>
+  <g clip-path="url(#tile)">
+    <circle cx="512" cy="560" r="420" fill="url(#glow)"/>
+    <!-- faint circuit/data lines -->
+    <g stroke="#a5b4fc" stroke-opacity="0.13" stroke-width="10" stroke-linecap="round" fill="none">
+      <path d="M100 300 H230 L290 360 H330"/>
+      <path d="M924 330 H800 L740 390 H700"/>
+      <path d="M100 760 H210 L260 710 H300"/>
+      <path d="M924 740 H820 L770 790 H720"/>
+    </g>
+    <g fill="#a5b4fc" fill-opacity="0.22">
+      <circle cx="330" cy="360" r="12"/>
+      <circle cx="700" cy="390" r="12"/>
+      <circle cx="300" cy="710" r="12"/>
+      <circle cx="720" cy="790" r="12"/>
+    </g>
+    <rect x="100" y="100" width="824" height="824" fill="url(#shine)"/>
+  </g>
+  <rect x="102" y="102" width="820" height="820" rx="184" fill="none" stroke="#ffffff" stroke-opacity="0.12" stroke-width="4"/>
+
+  <!-- Padlock -->
+  <g filter="url(#shadow)">
+    <path d="M392 492 V392 A120 120 0 0 1 632 392 V492" fill="none" stroke="url(#shackle)" stroke-width="72" stroke-linecap="round"/>
+    <rect x="300" y="462" width="424" height="330" rx="72" fill="url(#body)"/>
+  </g>
+  <!-- shackle highlight -->
+  <path d="M378 452 V392 A134 134 0 0 1 470 265" fill="none" stroke="#fff7d6" stroke-opacity="0.55" stroke-width="14" stroke-linecap="round"/>
+
+  <!-- Masked password field on the lock body -->
+  <rect x="352" y="582" width="320" height="94" rx="47" fill="#ede9fe"/>
+  <g fill="url(#dot)">
+    <circle cx="420" cy="629" r="24"/>
+    <circle cx="490" cy="629" r="24"/>
+    <circle cx="560" cy="629" r="24"/>
+  </g>
+  <rect x="612" y="599" width="12" height="60" rx="6" fill="#0891b2"/>
+
+  <!-- Sparkle -->
+  <g transform="translate(748 268)">
+    <path d="M0 -58 C8 -14 14 -8 58 0 C14 8 8 14 0 58 C-8 14 -14 8 -58 0 C-14 -8 -8 -14 0 -58 Z" fill="#ffffff" filter="url(#soft)" opacity="0.6"/>
+    <path d="M0 -58 C8 -14 14 -8 58 0 C14 8 8 14 0 58 C-8 14 -14 8 -58 0 C-14 -8 -8 -14 0 -58 Z" fill="#ffffff"/>
+  </g>
+  <circle cx="805" cy="352" r="10" fill="#ffffff" opacity="0.8"/>
+</svg>

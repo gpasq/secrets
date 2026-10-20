@@ -1,0 +1,33 @@
+[package]
+name = "secrets"
+version = "0.1.0"
+edition = "2024"
+description = "Create and manage AWS Secrets Manager secrets from a TUI or the command line"
+license = "MIT"
+rust-version = "1.95"
+
+[dependencies]
+anyhow = "1.0.104"
+aws-config = { version = "1.12.0", features = ["behavior-version-latest", "credentials-login"] }
+aws-sdk-secretsmanager = "1.120.0"
+aws-smithy-types = "1.9.0"
+base64 = "0.23.1"
+chrono = { version = "0.4.45", default-features = false, features = ["clock", "std"] }
+eframe = { version = "0.37", features = ["persistence"] }
+keyring = "4"
+rfd = "0.17.2"
+serde = { version = "1.0.229", features = ["derive"] }
+serde_json = { version = "1.0.154", features = ["preserve_order"] }
+tokio = { version = "1.54.0", features = ["rt-multi-thread", "macros"] }
+
+[profile.release]
+lto = "thin"
+strip = true
+codegen-units = 1
+
+[dev-dependencies]
+egui_kittest = { version = "0.37", features = ["wgpu", "snapshot", "eframe"] }
+tempfile = "3.27.0"
+
+[build-dependencies]
+winresource = "0.1.34"
