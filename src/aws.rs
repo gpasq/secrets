@@ -136,11 +136,15 @@ pub enum Deletion {
 }
 
 /// Format SDK errors with their full context (the default Display is just "service error"),
-/// adding a hint for the most common SSO failure.
+/// adding a hint for the most common SSO and `aws login` failures.
 pub fn sdk_err<E: std::error::Error>(e: E) -> anyhow::Error {
     let msg = DisplayErrorContext(&e).to_string();
     let lower = msg.to_lowercase();
-    if lower.contains("sso") && (lower.contains("token") || lower.contains("expired")) {
+    if lower.contains("login token") && lower.contains("expired") {
+        anyhow!(
+            "{msg}\n\nhint: your console login session has expired; run `aws login --profile <profile>`"
+        )
+    } else if lower.contains("sso") && (lower.contains("token") || lower.contains("expired")) {
         anyhow!(
             "{msg}\n\nhint: your SSO session may have expired; run `aws sso login --profile <profile>`"
         )
