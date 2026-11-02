@@ -34,6 +34,40 @@ const FIELD_MARGIN: Margin = Margin::symmetric(10, 8);
 /// Height of fixed-size text fields in tables.
 const ROW_H: f32 = 34.0;
 
+const COPYRIGHT_YEAR: u32 = 2026;
+
+/// Newest first. Keep this in step with the README's feature list.
+const WHATS_NEW: &[&str] = &[
+    "A new app icon to match NovaMail and DataWorx",
+    "Clearer error when an AWS profile isn't set up correctly",
+    "Saved connections with access keys in the system keychain, and optional role assumption",
+    "VS Code themes: six built in, import your own, or use any installed in VS Code",
+    "Code samples for reading a secret with the AWS SDK in nine languages",
+    "Edit key/value secrets as a table, with JSON formatting and highlighting",
+    "Versions, tags and rotation, with roll back to any version",
+    "Recoverable deletes with a 7–30 day window, and restore",
+];
+
+/// Components shipped in the app, with their licenses (from each crate's metadata).
+const ACKNOWLEDGEMENTS: &[(&str, &str, &str)] = &[
+    ("egui, eframe", "Emil Ernerfeldt", "MIT or Apache-2.0"),
+    (
+        "AWS SDK for Rust",
+        "Amazon.com, Inc. or its affiliates",
+        "Apache-2.0",
+    ),
+    ("Tokio", "Tokio Contributors", "MIT"),
+    ("winit", "The winit contributors", "Apache-2.0"),
+    ("keyring", "keyring-rs contributors", "MIT or Apache-2.0"),
+    ("rfd", "rfd contributors", "MIT"),
+    ("Serde", "Serde contributors", "MIT or Apache-2.0"),
+    ("chrono", "chrono contributors", "MIT or Apache-2.0"),
+    ("anyhow", "David Tolnay", "MIT or Apache-2.0"),
+    ("base64", "Marshall Pierce", "MIT or Apache-2.0"),
+    ("VS Code themes", "Microsoft Corporation", "MIT"),
+    ("Night Owl", "Sarah Drasner", "MIT"),
+];
+
 /// Key and value column widths for key/value and tag tables, leaving room for the row
 /// buttons so nothing runs off the edge of narrower windows.
 fn row_widths(available: f32) -> (f32, f32) {
@@ -417,6 +451,7 @@ pub struct SecretsApp {
     use_aws_config: bool,
     vault: Box<dyn Vault>,
     settings: Option<SettingsUi>,
+    about: bool,
     pending: Vec<PendingChange>,
     code_lang: Lang,
     logo: Option<egui::TextureHandle>,
@@ -529,6 +564,7 @@ impl SecretsApp {
             use_aws_config: true,
             vault: Box::new(KeyringVault),
             settings: None,
+            about: false,
             pending: Vec::new(),
             code_lang: Lang::JavaScript,
             logo: None,
@@ -1214,26 +1250,44 @@ impl SecretsApp {
         }
     }
 
+    /// The app icon as a texture, loaded on first use.
+    fn logo(&mut self, ctx: &egui::Context) -> egui::TextureHandle {
+        self.logo
+            .get_or_insert_with(|| {
+                let icon =
+                    eframe::icon_data::from_png_bytes(include_bytes!("../assets/icon-256.png"))
+                        .expect("bundled icon is a valid PNG");
+                let image = egui::ColorImage::from_rgba_unmultiplied(
+                    [icon.width as usize, icon.height as usize],
+                    &icon.rgba,
+                );
+                ctx.load_texture("logo", image, egui::TextureOptions::LINEAR)
+            })
+            .clone()
+    }
+
     fn top_bar(&mut self, ui: &mut Ui) {
         ui.horizontal(|ui| {
             let title_fg = self.palette.titlebar_fg;
-            let logo = self
-                .logo
-                .get_or_insert_with(|| {
-                    let icon =
-                        eframe::icon_data::from_png_bytes(include_bytes!("../assets/icon-256.png"))
-                            .expect("bundled icon is a valid PNG");
-                    let image = egui::ColorImage::from_rgba_unmultiplied(
-                        [icon.width as usize, icon.height as usize],
-                        &icon.rgba,
-                    );
-                    ui.ctx()
-                        .load_texture("logo", image, egui::TextureOptions::LINEAR)
-                })
-                .clone();
-            ui.add(egui::Image::new((logo.id(), egui::vec2(30.0, 30.0))).alt_text("Secrets"));
+            let logo = self.logo(ui.ctx());
+            // The logo and name open About.
+            let icon = ui.add(
+                egui::Image::new((logo.id(), egui::vec2(30.0, 30.0)))
+                    .alt_text("Secrets")
+                    .sense(egui::Sense::click()),
+            );
             ui.add_space(-6.0);
-            ui.label(RichText::new("Secrets").strong().size(17.0).color(title_fg));
+            let name = ui.add(
+                egui::Label::new(RichText::new("Secrets").strong().size(17.0).color(title_fg))
+                    .sense(egui::Sense::click()),
+            );
+            if (icon | name)
+                .on_hover_cursor(egui::CursorIcon::PointingHand)
+                .on_hover_text("About Secrets")
+                .clicked()
+            {
+                self.about = true;
+            }
             ui.separator();
 
             let mut pick: Option<Source> = None;
@@ -1314,6 +1368,9 @@ impl SecretsApp {
             ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
                 if ui.button("Settings").clicked() {
                     self.settings = Some(SettingsUi::new(SettingsPage::Connections));
+                }
+                if ui.button("About").clicked() {
+                    self.about = true;
                 }
                 let enabled = self.sm.is_some();
                 if ui
@@ -1437,18 +1494,16 @@ impl SecretsApp {
                         .min_size(egui::vec2(0.0, 34.0))
                         .atom_ui(ui);
                     let dot_rect = resp.rect(dot_id);
-                    let resp = resp
-                        .response
-                        .on_hover_text(format!(
-                            "{}\nLast changed {}{}",
-                            s.description.as_deref().unwrap_or(&s.name),
-                            fmt_time(s.last_changed),
-                            if s.rotation_enabled {
-                                "\nRotation enabled"
-                            } else {
-                                ""
-                            }
-                        ));
+                    let resp = resp.response.on_hover_text(format!(
+                        "{}\nLast changed {}{}",
+                        s.description.as_deref().unwrap_or(&s.name),
+                        fmt_time(s.last_changed),
+                        if s.rotation_enabled {
+                            "\nRotation enabled"
+                        } else {
+                            ""
+                        }
+                    ));
                     if let Some(r) = dot_rect {
                         let dot = if s.deleted.is_some() {
                             red(ui)
@@ -2627,9 +2682,201 @@ impl SecretsApp {
         });
     }
 
+    /// About Secrets: version and build, copyright, recent features, and the open-source
+    /// components the app ships with.
+    fn about_window(&mut self, ctx: &egui::Context) {
+        if !self.about {
+            return;
+        }
+        const W: f32 = 520.0;
+        let logo = self.logo(ctx);
+        let p = self.palette.clone();
+        let mut close = false;
+        let resp = Modal::new(Id::unique("about"))
+            .frame(Frame::popup(&ctx.global_style()).inner_margin(Margin::same(0)))
+            .show(ctx, |ui| {
+                ui.set_width(W);
+                ui.spacing_mut().item_spacing = egui::vec2(0.0, 0.0);
+
+                // Hero: icon, name, byline, version and copyright, centred.
+                let hero = Frame::new()
+                    .inner_margin(Margin {
+                        left: 24,
+                        right: 24,
+                        top: 28,
+                        bottom: 18,
+                    })
+                    .show(ui, |ui| {
+                        ui.set_width(W - 48.0);
+                        ui.vertical_centered(|ui| {
+                            ui.add(egui::Image::new((logo.id(), egui::vec2(84.0, 84.0))));
+                            ui.add_space(6.0);
+                            ui.label(RichText::new("Secrets").size(26.0).strong());
+                            ui.add_space(2.0);
+                            ui.label(RichText::new("by tecnicl").size(12.5).color(p.fg_weak));
+                            ui.add_space(10.0);
+                            ui.horizontal(|ui| {
+                                // Centre the version line by measuring it first.
+                                let version =
+                                    format!("Version {}", env!("CARGO_PKG_VERSION"));
+                                let build = format!(" (Build {})", env!("SECRETS_BUILD"));
+                                let font = FontId::proportional(13.5);
+                                let w = ui.fonts_mut(|f| {
+                                    f.layout_no_wrap(
+                                        format!("{version}{build}"),
+                                        font.clone(),
+                                        p.fg,
+                                    )
+                                    .size()
+                                    .x
+                                });
+                                ui.add_space(((ui.available_width() - w) / 2.0).max(0.0));
+                                ui.label(RichText::new(version).font(font.clone()));
+                                ui.add(
+                                    egui::Label::new(
+                                        RichText::new(build).font(font).color(p.fg_weak),
+                                    )
+                                    .selectable(true),
+                                );
+                            });
+                            ui.add_space(4.0);
+                            ui.label(
+                                RichText::new(format!(
+                                    "© {COPYRIGHT_YEAR} Greg Pasquariello. Released under the MIT License."
+                                ))
+                                .size(12.5)
+                                .color(p.fg_weak),
+                            );
+                        });
+                    });
+                // Close button in the top-right corner.
+                let corner = hero.response.rect.right_top() + egui::vec2(-42.0, 10.0);
+                let x = ui.place(
+                    egui::Rect::from_min_size(corner, egui::vec2(32.0, 32.0)),
+                    egui::Button::new(RichText::new("×").size(20.0)).frame_when_inactive(false),
+                );
+                if x.on_hover_text("Close").clicked() {
+                    close = true;
+                }
+                let line = hero.response.rect;
+                ui.painter().hline(
+                    line.x_range(),
+                    line.bottom(),
+                    egui::Stroke::new(1.0, p.border),
+                );
+
+                let section = |ui: &mut Ui, title: &str| {
+                    ui.add_space(16.0);
+                    ui.label(
+                        RichText::new(title.to_uppercase())
+                            .size(13.0)
+                            .strong()
+                            .extra_letter_spacing(0.4)
+                            .color(p.fg_weak),
+                    );
+                    ui.add_space(8.0);
+                };
+                let max_h = (ctx.content_rect().height() * 0.86 - 260.0).max(160.0);
+                Frame::new()
+                    .inner_margin(Margin {
+                        left: 24,
+                        right: 12,
+                        top: 6,
+                        bottom: 22,
+                    })
+                    .show(ui, |ui| {
+                        ScrollArea::vertical()
+                            .max_height(max_h)
+                            .min_scrolled_height(max_h)
+                            .auto_shrink([false, true])
+                            .show(ui, |ui| {
+                                ui.set_width(W - 48.0);
+                                section(ui, "What's New");
+                                ui.spacing_mut().item_spacing.y = 6.0;
+                                for f in WHATS_NEW {
+                                    ui.horizontal_top(|ui| {
+                                        ui.add_space(4.0);
+                                        ui.label(RichText::new("•").size(14.0));
+                                        ui.add_space(8.0);
+                                        ui.add(egui::Label::new(RichText::new(*f).size(14.0)).wrap());
+                                    });
+                                }
+                                ui.spacing_mut().item_spacing.y = 0.0;
+
+                                section(ui, "Acknowledgements");
+                                ui.label(
+                                    RichText::new(
+                                        "Secrets is built with these open-source components, \
+                                         used under their licenses:",
+                                    )
+                                    .size(13.0)
+                                    .color(p.fg_weak),
+                                );
+                                ui.add_space(8.0);
+                                // [name | © owner | license] columns, the owner truncated to fit.
+                                let small = |t: String| RichText::new(t).size(12.5);
+                                let license_fg = theme::mix(p.fg_weak, p.editor_bg, 0.3);
+                                let width = ui.available_width();
+                                for (name, owner, license) in ACKNOWLEDGEMENTS {
+                                    let license_w = ui.fonts_mut(|f| {
+                                        f.layout_no_wrap(
+                                            license.to_string(),
+                                            FontId::proportional(12.5),
+                                            license_fg,
+                                        )
+                                        .size()
+                                        .x
+                                    });
+                                    let row = ui.horizontal(|ui| {
+                                        ui.spacing_mut().item_spacing.x = 10.0;
+                                        let cell = |ui: &mut Ui, w: f32, text: RichText| {
+                                            ui.allocate_ui_with_layout(
+                                                egui::vec2(w, 28.0),
+                                                Layout::left_to_right(Align::Center),
+                                                |ui| {
+                                                    ui.set_min_size(egui::vec2(w, 28.0));
+                                                    ui.add(egui::Label::new(text).truncate());
+                                                },
+                                            );
+                                        };
+                                        cell(ui, 118.0, small(name.to_string()).strong());
+                                        cell(
+                                            ui,
+                                            (width - 118.0 - license_w - 20.0).max(40.0),
+                                            small(format!("© {owner}")).color(p.fg_weak),
+                                        );
+                                        cell(ui, license_w, small(license.to_string()).color(license_fg));
+                                    });
+                                    let r = row.response.rect;
+                                    ui.painter().hline(
+                                        r.x_range(),
+                                        r.bottom(),
+                                        egui::Stroke::new(1.0, theme::mix(p.border, p.editor_bg, 0.4)),
+                                    );
+                                }
+                                ui.add_space(14.0);
+                                ui.label(
+                                    RichText::new(
+                                        "AWS and AWS Secrets Manager are trademarks of Amazon.com, \
+                                         Inc. or its affiliates. Visual Studio Code is a trademark \
+                                         of Microsoft Corporation. Secrets is not affiliated with \
+                                         or endorsed by them.",
+                                    )
+                                    .size(11.5)
+                                    .color(p.fg_weak),
+                                );
+                            });
+                    });
+            });
+        if close || resp.should_close() {
+            self.about = false;
+        }
+    }
+
     fn dialogs(&mut self, ctx: &egui::Context) {
         let syntax = self.palette.syntax.clone();
         self.settings_window(ctx);
+        self.about_window(ctx);
         if let Some(c) = &self.confirm {
             let mut result = None;
             let resp = Modal::new(Id::unique("confirm"))
@@ -3041,16 +3288,16 @@ mod tests {
             "prod/old-token",
             "rds-db-credentials/cluster-ZPV5ADGCPW7EDA6RA7B7NPGVHI/postgres/1768923618636",
         ]
-            .iter()
-            .map(|n| SecretSummary {
-                name: n.to_string(),
-                description: Some(format!("{n} description")),
-                last_changed: Some(now),
-                deleted: (*n == "prod/old-token").then_some(now),
-                rotation_enabled: *n == "prod/db",
-                tags: vec![("team".into(), "core".into())],
-            })
-            .collect();
+        .iter()
+        .map(|n| SecretSummary {
+            name: n.to_string(),
+            description: Some(format!("{n} description")),
+            last_changed: Some(now),
+            deleted: (*n == "prod/old-token").then_some(now),
+            rotation_enabled: *n == "prod/db",
+            tags: vec![("team".into(), "core".into())],
+        })
+        .collect();
         app.selected = Some("prod/db".into());
         let mut versions = std::collections::BTreeMap::new();
         versions.insert("v-2".to_string(), vec!["AWSCURRENT".to_string()]);
@@ -3316,6 +3563,13 @@ mod tests {
         h.state_mut().settings = Some(SettingsUi::new(SettingsPage::Appearance));
         shot(&mut h, "settings-appearance");
         h.state_mut().settings = None;
+
+        h.state_mut().about = true;
+        shot(&mut h, "about");
+        h.state_mut().appearance = Appearance::Light;
+        shot(&mut h, "about-light");
+        reset_theme(&mut h);
+        h.state_mut().about = false;
 
         // First run with no credentials anywhere.
         h.state_mut().source = None;
