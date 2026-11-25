@@ -69,7 +69,7 @@ windows:
     PATH="$(brew --prefix llvm)/bin:$PATH" cargo xwin build --release --target {{windows_target}}
     @echo "Built target/{{windows_target}}/release/secrets.exe"
 
-# Regenerate icon PNG/.icns/.ico from assets/icon.svg (needs: cargo install resvg)
+# Regenerate icon PNG/.icns/.ico from the borderless assets/icon-glyph.svg (needs: cargo install resvg)
 [macos]
 icon:
     #!/usr/bin/env bash
@@ -77,13 +77,13 @@ icon:
     tmp=$(mktemp -d)
     mkdir "$tmp/AppIcon.iconset"
     for s in 16 32 128 256 512; do
-        resvg -w $s -h $s assets/icon.svg "$tmp/AppIcon.iconset/icon_${s}x${s}.png"
-        resvg -w $((s*2)) -h $((s*2)) assets/icon.svg "$tmp/AppIcon.iconset/icon_${s}x${s}@2x.png"
+        resvg -w $s -h $s assets/icon-glyph.svg "$tmp/AppIcon.iconset/icon_${s}x${s}.png"
+        resvg -w $((s*2)) -h $((s*2)) assets/icon-glyph.svg "$tmp/AppIcon.iconset/icon_${s}x${s}@2x.png"
     done
     iconutil -c icns "$tmp/AppIcon.iconset" -o assets/AppIcon.icns
-    resvg -w 256 -h 256 assets/icon.svg assets/icon-256.png
-    for s in 16 24 32 48 64 128; do resvg -w $s -h $s assets/icon.svg "$tmp/$s.png"; done
-    python3 assets/make-ico.py assets/icon.ico "$tmp"/{16,24,32,48,64,128}.png assets/icon-256.png
+    resvg -w 256 -h 256 assets/icon-glyph.svg assets/icon-256.png
+    for s in 16 24 32 48 64; do resvg -w $s -h $s assets/icon-glyph.svg "$tmp/$s.png"; done
+    python3 assets/make-ico.py assets/icon.ico "$tmp"/{16,24,32,48,64}.png assets/icon-256.png
     rm -rf "$tmp"
     echo "Updated assets/AppIcon.icns, assets/icon.ico, assets/icon-256.png"
 

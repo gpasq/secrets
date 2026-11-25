@@ -1,0 +1,51 @@
+<!-- Secrets app icon: the borderless, full-size glyph every platform icon is rendered from
+     (icon.ico, AppIcon.icns and icon-256.png; run `just icon`). The same design as icon.svg,
+     a padlock beside the vault it guards, without the tile, redrawn larger and bolder so it
+     fills the icon like other taskbar and Dock icons (matching MDReader and Runner). The
+     background is transparent and the keyhole is cut out; mid-tone colors read on light
+     and dark. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs>
+    <!-- Padlock colour: mint into emerald. -->
+    <linearGradient id="vault" gradientUnits="userSpaceOnUse" x1="80" y1="140" x2="486" y2="880">
+      <stop offset="0" stop-color="#34D399"/>
+      <stop offset="1" stop-color="#059669"/>
+    </linearGradient>
+    <!-- Cuts the keyhole out of the padlock body. -->
+    <mask id="keyhole">
+      <rect width="1024" height="1024" fill="#fff"/>
+      <circle cx="283" cy="608" r="56" fill="#000"/>
+      <rect x="257" y="620" width="52" height="132" rx="26" fill="#000"/>
+    </mask>
+  </defs>
+
+  <!-- The padlock: a stroked shackle over a solid body with a keyhole. -->
+  <path d="M165,450 V306 A118,118 0 0 1 401,306 V450" fill="none" stroke="url(#vault)"
+        stroke-width="96" stroke-linecap="round"/>
+  <rect x="80" y="414" width="406" height="464" rx="104" fill="url(#vault)" mask="url(#keyhole)"/>
+
+  <!-- Vault: a header row, then secret rows as [name | ••••] cells, the top two names lit. -->
+  <rect x="590" y="112" width="402" height="100" rx="50" fill="#34D399"/>
+
+  <rect x="590" y="287" width="120" height="100" rx="50" fill="#10B981"/>
+  <g fill="#8A8A93">
+    <circle cx="778" cy="337" r="38"/><circle cx="866" cy="337" r="38"/>
+    <circle cx="954" cy="337" r="38"/>
+  </g>
+
+  <rect x="590" y="462" width="120" height="100" rx="50" fill="#059669"/>
+  <g fill="#8A8A93">
+    <circle cx="778" cy="512" r="38"/><circle cx="866" cy="512" r="38"/>
+  </g>
+
+  <rect x="590" y="637" width="120" height="100" rx="50" fill="#71717A"/>
+  <g fill="#8A8A93">
+    <circle cx="778" cy="687" r="38"/><circle cx="866" cy="687" r="38"/>
+    <circle cx="954" cy="687" r="38"/>
+  </g>
+
+  <rect x="590" y="812" width="120" height="100" rx="50" fill="#71717A"/>
+  <g fill="#71717A">
+    <circle cx="778" cy="862" r="38"/><circle cx="866" cy="862" r="38"/>
+  </g>
+</svg>

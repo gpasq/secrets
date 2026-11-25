@@ -38,6 +38,7 @@ const COPYRIGHT_YEAR: u32 = 2026;
 
 /// Newest first. Keep this in step with the README's feature list.
 const WHATS_NEW: &[&str] = &[
+    "A larger, borderless app icon to match MDReader and Runner",
     "A new app icon to match NovaMail and DataWorx",
     "Clearer error when an AWS profile isn't set up correctly",
     "Saved connections with access keys in the system keychain, and optional role assumption",

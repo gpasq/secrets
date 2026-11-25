@@ -1,4 +1,5 @@
-<!-- Secrets app icon (source for icon-256.png, icon.ico and AppIcon.icns; run `just icon`).
+<!-- Secrets app icon, the original tiled design (kept for reference; the platform icons are
+     now rendered from the borderless assets/icon-glyph.svg by `just icon`).
      A padlock beside the vault it guards: a header row, then secret rows split into
      [name | masked value] cells, with the values shown as password dots and the top
      two names lit. Matches the DataWorx/NovaMail icon family: dark body, soft glow,

@@ -159,8 +159,9 @@ Source layout:
 - `src/aws.rs`: Secrets Manager SDK wrapper
 - `src/util.rs`, `src/profiles.rs`: pure helpers
 - `assets/Info.plist`: macOS app bundle metadata
-- `assets/icon.svg`: the app icon source. After editing it, run `just icon` (needs
-  `cargo install resvg`) to regenerate `AppIcon.icns` (macOS), `icon.ico` (Windows exe,
+- `assets/icon-glyph.svg`: the app icon source, a borderless glyph on a transparent
+  background (`assets/icon.svg` is the earlier tiled design, kept for reference). After
+  editing it, run `just icon` (needs `cargo install resvg`) to regenerate `AppIcon.icns` (macOS), `icon.ico` (Windows exe,
   embedded by `build.rs`) and `icon-256.png` (window icon).
 
 ## Building for Windows
