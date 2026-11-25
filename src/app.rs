@@ -77,6 +77,42 @@ fn row_widths(available: f32) -> (f32, f32) {
     (key, value)
 }
 
+/// The font family for the app's name in the top bar.
+const BRAND_FONT: &str = "brand";
+/// "Sec" + "rets" in the icon's emerald, and "by tecnicl", as in Runner and MDReader.
+const BRAND_DARK: Color32 = Color32::from_rgb(0x10, 0xB9, 0x81);
+const BRAND_LIGHT: Color32 = Color32::from_rgb(0x05, 0x96, 0x69);
+
+/// Registers the [`BRAND_FONT`] family: the system's bold UI font where one is found (egui
+/// bundles no bold face), falling back to the regular proportional fonts.
+fn install_brand_font(ctx: &egui::Context) {
+    const BOLD: &[&str] = &[
+        "C:/Windows/Fonts/segoeuib.ttf",
+        "/System/Library/Fonts/Supplemental/Arial Bold.ttf",
+        "/Library/Fonts/Arial Bold.ttf",
+        "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
+        "/usr/share/fonts/TTF/DejaVuSans-Bold.ttf",
+    ];
+    let mut fonts = egui::FontDefinitions::default();
+    let mut family = Vec::new();
+    if let Some(bytes) = BOLD.iter().find_map(|p| std::fs::read(p).ok()) {
+        fonts.font_data.insert(
+            "brand-bold".into(),
+            egui::FontData::from_owned(bytes).into(),
+        );
+        family.push("brand-bold".to_string());
+    }
+    family.extend(
+        fonts.families[&egui::FontFamily::Proportional]
+            .iter()
+            .cloned(),
+    );
+    fonts
+        .families
+        .insert(egui::FontFamily::Name(BRAND_FONT.into()), family);
+    ctx.set_fonts(fonts);
+}
+
 /// Roomier defaults than egui's compact look: larger text, padding and spacing.
 fn apply_style(ctx: &egui::Context, palette: &Palette) {
     theme::store_palette(ctx, palette);
@@ -545,6 +581,7 @@ impl SecretsApp {
 
     /// App state without connecting to AWS (used directly by tests).
     fn offline(ctx: egui::Context) -> Self {
+        install_brand_font(&ctx);
         let rt = tokio::runtime::Builder::new_multi_thread()
             .worker_threads(2)
             .enable_all()
@@ -1271,17 +1308,37 @@ impl SecretsApp {
         ui.horizontal(|ui| {
             let title_fg = self.palette.titlebar_fg;
             let logo = self.logo(ui.ctx());
-            // The logo and name open About.
+            // The app's name, as in Runner and MDReader: icon, "Sec" + "rets" in the icon's
+            // emerald, and a muted "by tecnicl". The logo and name open About.
+            let spacing = ui.spacing().item_spacing.x;
+            ui.spacing_mut().item_spacing.x = 8.0;
             let icon = ui.add(
-                egui::Image::new((logo.id(), egui::vec2(30.0, 30.0)))
+                egui::Image::new((logo.id(), egui::vec2(24.0, 24.0)))
                     .alt_text("Secrets")
                     .sense(egui::Sense::click()),
             );
-            ui.add_space(-6.0);
-            let name = ui.add(
-                egui::Label::new(RichText::new("Secrets").strong().size(17.0).color(title_fg))
-                    .sense(egui::Sense::click()),
+            let brand = if ui.visuals().dark_mode {
+                BRAND_DARK
+            } else {
+                BRAND_LIGHT
+            };
+            let bold = FontId::new(19.0, egui::FontFamily::Name(BRAND_FONT.into()));
+            let mut job = egui::text::LayoutJob::default();
+            let fmt = |font: FontId, color: Color32| egui::TextFormat {
+                font_id: font,
+                color,
+                valign: egui::Align::BOTTOM,
+                ..Default::default()
+            };
+            job.append("Sec", 0.0, fmt(bold.clone(), title_fg));
+            job.append("rets", 0.0, fmt(bold, brand));
+            job.append(
+                "by tecnicl",
+                8.0,
+                fmt(FontId::proportional(13.0), self.palette.fg_weak),
             );
+            let name = ui.add(egui::Label::new(job).sense(egui::Sense::click()));
+            ui.spacing_mut().item_spacing.x = spacing;
             if (icon | name)
                 .on_hover_cursor(egui::CursorIcon::PointingHand)
                 .on_hover_text("About Secrets")
