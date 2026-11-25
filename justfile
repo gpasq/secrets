@@ -62,6 +62,11 @@ check:
     cargo clippy --all-targets -- -D warnings
     cargo test
 
+# Build target/installer/Secrets-<version>-<arch>-setup.exe (needs: scoop install extras/inno-setup)
+[windows]
+installer: release
+    pwsh -NoProfile -File installer/build.ps1
+
 # Cross-compile a Windows .exe from macOS (needs: brew install llvm nasm cmake; cargo install cargo-xwin)
 [unix]
 windows:

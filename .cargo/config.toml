@@ -1,0 +1,4 @@
+# Link the C runtime statically on Windows, so secrets.exe runs on PCs without the
+# Visual C++ Redistributable installed (the installer ships only the .exe).
+[target.'cfg(all(windows, target_env = "msvc"))']
+rustflags = ["-C", "target-feature=+crt-static"]

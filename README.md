@@ -172,6 +172,14 @@ with C++" workload. Then run `cargo build --release`. The TLS library (`aws-lc-r
 occasionally needs [NASM](https://www.nasm.us) and [CMake](https://cmake.org) on `PATH`;
 install them if the build asks.
 
+**Installer:** `just installer` builds the release exe and packages it as
+`target\installer\Secrets-<version>-<arch>-setup.exe` (x64 or arm64, matching the machine).
+It installs per-user into `%LOCALAPPDATA%\Programs\Secrets` with no admin prompt, adds a
+Start menu shortcut (and an optional desktop one), and shows up in Settings → Apps for
+uninstalling. Building it needs Inno Setup 6.3+ (`scoop install extras/inno-setup`). The
+C runtime is linked statically (`.cargo/config.toml`), so target PCs don't need the Visual
+C++ Redistributable. The version comes from `Cargo.toml`.
+
 **CI:** `.github/workflows/ci.yml` runs fmt, clippy, tests and a release build on macOS
 (arm64 and x86_64) and Windows (x64 and arm64). The binaries are uploaded as workflow
 artifacts. Push the repo to GitHub to get a Windows `.exe` without a Windows machine.
