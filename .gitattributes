@@ -1,0 +1,7 @@
+# Linux conventions: LF line endings everywhere, regardless of platform.
+* text=auto eol=lf
+
+# Binary assets: never touch line endings or diff as text.
+*.png  binary
+*.ico  binary
+*.icns binary
